@@ -1,0 +1,30 @@
+---
+# playboook es una lista de plays
+- name: "PLAY 1: Manage NTP config"
+  hosts: all
+
+  # each play has a list of tasks
+  tasks: 
+    - name: "TASK 0: Validate NTP Servers"
+      assert:
+        that:
+          - "ntp_server1 is defined"
+          - "ntp_server2 is defined"
+          - "ntp_server1 | ipv4 == ntp_server1"
+          - "ntp_server2 | ipv4 == ntp_server2"
+
+        msg: "Malformed input; check ntp_server values"
+
+    - name: "TASK 1: Apply NTP updates"
+      ios_config:
+        lines:
+          - "ntp authenticate"
+          - "ntp logging"
+          - "ntp server {{ ntp_server1 }}"
+          - "ntp server {{ ntp_server2 }}"
+      register: "ntp_updates" #assign the result
+
+    - name: "TASK 2: Print changes if they occurred"
+      debug:
+        var: "ntp_updates.updates"
+      when: "ntp_updates.updates is defined"
